@@ -1,10 +1,18 @@
-import mongoose from "mongoose";
+import express, { Request, Response } from "express";
+import { Tenant } from "./tenant.model";
+const router = express.Router();
 
-const tenantSchema = new mongoose.Schema({
-  tenantId: { type: String, unique: true },
-  name: String,
-  plan: String,
-  createdAt: { type: Date, default: Date.now },
+router.get("/", async (req: Request, res: Response) => {
+  const tenants = await Tenant.find();
+  res.json(tenants);
 });
 
-export const Tenant = mongoose.model("Tenant", tenantSchema);
+router.post("/", async (req: Request, res: Response) => {
+  const tenant = await Tenant.create({
+    ...req.body,
+    tenantId: req.user.tenantId,
+  });
+  res.status(201).json(tenant);
+});
+
+export const tenantRoutes = router;

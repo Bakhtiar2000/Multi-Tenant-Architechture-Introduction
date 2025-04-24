@@ -1,9 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  tenantId: { type: String, required: true },
+  tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true },
   name: String,
-  email: String,
+  password: { type: String, required: true },
+  email: { type: String, required: true },
   role: { type: String, enum: ["admin", "user"], default: "user" },
 });
 
