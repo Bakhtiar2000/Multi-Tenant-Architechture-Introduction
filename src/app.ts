@@ -3,6 +3,7 @@ import cors from "cors";
 import router from "./app/routes";
 import globalErrorHandler from "./app/middleWear/globalErrorHandler";
 import notFound from "./app/middleWear/notFound";
+import getTenantFromSubdomain from "./app/middleWear/getTenantFromSubdomain";
 
 const app = express();
 

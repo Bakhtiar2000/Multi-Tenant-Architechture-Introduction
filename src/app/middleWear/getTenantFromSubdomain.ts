@@ -6,9 +6,12 @@ const getTenantFromSubdomain = (
   next: NextFunction
 ) => {
   const host = req.headers.host as string; // e.g., tenantA.returnhex.com
-  const tenantId = host.split(".")[0]; // 'tenantA'
-
-  req.tenantId = tenantId;
+  const subdomain = host.split(".")[0]; // 'tenantA'
+  if (!subdomain) {
+    res.status(400).json({ message: "Tenant not found" });
+    return;
+  }
+  req.tenantId = subdomain;
   next();
 };
 

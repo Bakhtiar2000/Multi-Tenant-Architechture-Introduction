@@ -2,11 +2,11 @@ import httpStatus from "http-status";
 import { catchAsync } from "../utils/catchAsync";
 import { JwtPayload } from "jsonwebtoken";
 import config from "../config";
-import { User } from "../modules/user/user.model";
+import { TUserRole, User } from "../modules/user/user.model";
 import ApiError from "../errors/ApiError";
 import { verifyToken } from "../modules/auth/auth.utils";
 
-const auth = (...requiredRoles: ["user", "admin"]) => {
+const auth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req, res, next) => {
     const token = req.headers.authorization;
 
@@ -29,7 +29,7 @@ const auth = (...requiredRoles: ["user", "admin"]) => {
       );
     }
     console.log(decoded);
-    const { userId, role, iat } = decoded;
+    const { userId, role, tenantId, iat } = decoded;
     const user = await User.findById(userId);
 
     // Check if user exists
@@ -58,6 +58,7 @@ const auth = (...requiredRoles: ["user", "admin"]) => {
     }
 
     req.user = decoded as JwtPayload;
+    // req.tenantId = tenantId;
     next();
   });
 };

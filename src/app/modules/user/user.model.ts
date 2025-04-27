@@ -1,7 +1,10 @@
 import mongoose, { Schema } from "mongoose";
+import USER_ROLE from "../../constants/userRole";
+
+export type TUserRole = keyof typeof USER_ROLE;
 
 const userSchema = new mongoose.Schema({
-  tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true },
+  tenantId: { type: String, required: true },
   name: String,
   password: { type: String, required: true },
   email: { type: String, required: true },
