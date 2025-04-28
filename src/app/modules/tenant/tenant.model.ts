@@ -6,6 +6,7 @@ const tenantSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      unique: true,
     },
     tenantId: {
       type: String,
@@ -17,6 +18,7 @@ const tenantSchema = new mongoose.Schema(
     ownerEmail: {
       type: String,
       required: true,
+      unique: true,
       trim: true,
       lowercase: true,
     },

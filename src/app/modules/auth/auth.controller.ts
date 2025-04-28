@@ -5,7 +5,7 @@ import { AuthServices } from "./auth.service";
 import config from "../../config";
 
 const loginUser = catchAsync(async (req, res) => {
-  const result = await AuthServices.loginUser(req.body);
+  const result = await AuthServices.loginUser(req.body, req.tenantId);
   const { refreshToken, accessToken } = result;
 
   res.cookie("refreshToken", refreshToken, {
@@ -23,7 +23,11 @@ const loginUser = catchAsync(async (req, res) => {
 });
 
 const changePassword = catchAsync(async (req, res) => {
-  const result = await AuthServices.changePassword(req.user, req.body);
+  const result = await AuthServices.changePassword(
+    req.user,
+    req.tenantId,
+    req.body
+  );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -35,7 +39,7 @@ const changePassword = catchAsync(async (req, res) => {
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
   console.log(refreshToken);
-  const result = await AuthServices.refreshToken(refreshToken);
+  const result = await AuthServices.refreshToken(refreshToken, req.tenantId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -45,7 +49,10 @@ const refreshToken = catchAsync(async (req, res) => {
 });
 
 const forgetPassword = catchAsync(async (req, res) => {
-  const result = await AuthServices.forgetPassword(req.body.email);
+  const result = await AuthServices.forgetPassword(
+    req.body.email,
+    req.tenantId
+  );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

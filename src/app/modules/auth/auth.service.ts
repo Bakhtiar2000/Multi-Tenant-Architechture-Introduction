@@ -7,9 +7,12 @@ import config from "../../config";
 import bcrypt from "bcrypt";
 import { createToken, verifyToken } from "./auth.utils";
 import { sendEmail } from "../../utils/sendEmail";
+import checkTenant from "../../utils/checkTenant";
 
-const loginUser = async (payload: TLoginUser) => {
-  const user = await User.findOne({ email: payload?.email }).select(
+const loginUser = async (payload: TLoginUser, tenantId: string) => {
+  console.log(tenantId);
+  await checkTenant(tenantId);
+  const user = await User.findOne({ email: payload?.email, tenantId }).select(
     "+password"
   );
 
@@ -61,9 +64,14 @@ const loginUser = async (payload: TLoginUser) => {
 
 const changePassword = async (
   userData: JwtPayload,
+  tenantId: string,
   payload: { oldPassword: string; newPassword: string }
 ) => {
-  const user = await User.findById(userData.userId).select("+password");
+  await checkTenant(tenantId);
+  const user = await User.findOne({
+    _id: userData.userId,
+    tenantId,
+  }).select("+password");
 
   // Check if user exists
   if (!user) {
@@ -105,14 +113,15 @@ const changePassword = async (
   return null; // No need to send password as response. That's why we did not assign update operation in result variable too
 };
 
-const refreshToken = async (token: string) => {
+const refreshToken = async (token: string, tenantId: string) => {
+  await checkTenant(tenantId);
   // checking if the given token is valid
   const decoded = verifyToken(token, config.jwt_refresh_secret as string);
 
   const { userId, iat } = decoded;
 
   // checking if the user exists
-  const user = await User.findById(userId);
+  const user = await User.findOne({ _id: userId, tenantId });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "This user is not found !");
   }
@@ -144,11 +153,10 @@ const refreshToken = async (token: string) => {
   };
 };
 
-const forgetPassword = async (email: string) => {
+const forgetPassword = async (email: string, tenantId: string) => {
+  await checkTenant(tenantId);
   // checking if the user exists
-  console.log(email);
-  console.log(await User.find());
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email, tenantId });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "This user is not found !");
   }

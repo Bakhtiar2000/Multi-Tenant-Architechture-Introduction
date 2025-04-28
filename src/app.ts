@@ -10,6 +10,7 @@ const app = express();
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(getTenantFromSubdomain); // tenant
 app.use("/api/v1", router);
 
 app.get("/", (req: Request, res: Response) => {

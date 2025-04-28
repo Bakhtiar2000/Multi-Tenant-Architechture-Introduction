@@ -1,25 +1,53 @@
 import express, { Request, Response } from "express";
 import { User } from "./user.model";
-import getTenantFromSubdomain from "../../middleWear/getTenantFromSubdomain";
 import auth from "../../middleWear/auth";
 import USER_ROLE from "../../constants/userRole";
+import bcrypt from "bcrypt";
+import httpStatus from "http-status";
+import checkTenant from "../../utils/checkTenant";
+import { catchAsync } from "../../utils/catchAsync";
+import ApiError from "../../errors/ApiError";
+
 const router = express.Router();
 
-router.get("/", auth(USER_ROLE.admin), async (req: Request, res: Response) => {
-  const users = await User.find({ tenantId: req.tenantId });
-  res.json(users);
-});
+router.get(
+  "/",
+  auth(USER_ROLE.admin),
+  catchAsync(async (req: Request, res: Response) => {
+    const requestedAdmin = await User.findOne({
+      _id: req.user.userId,
+      tenantId: req.tenantId,
+    });
+    if (!requestedAdmin) {
+    }
+    const users = await User.find({ tenantId: req.tenantId });
+    res
+      .status(201)
+      .json({ message: "Users retieved successfully!", data: users });
+  })
+);
 
 router.post(
   "/",
-  getTenantFromSubdomain,
-  async (req: Request, res: Response) => {
-    console.log(req.body, req.tenantId);
-    const user = await User.create({ ...req.body, tenantId: req.tenantId });
-    res.status(201).json(user);
-  }
+  catchAsync(async (req: Request, res: Response) => {
+    await checkTenant(req.tenantId);
+    const payload = req.body;
+    if (payload.role == "super_admin")
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized access");
+    const existingUser = await User.findOne({
+      email: payload.email,
+      tenantId: req.tenantId,
+    });
+    if (existingUser)
+      throw new ApiError(httpStatus.CONFLICT, "User already exists!");
+
+    const newHashedPassword = await bcrypt.hash(payload?.password, 10);
+    payload.password = newHashedPassword;
+    const user = await User.create({ ...payload, tenantId: req.tenantId });
+    res.status(201).json({ message: "User created successfully!", data: user });
+  })
 );
 
 export const UserRoutes = router;
 
-// shopify-q1aqn7.fahim   blackberry-d8rkg0.fahim   hubspot-iavyt8.fahim
+// nokia-88zvu9.fahim   samsung-8go31u.fahim   hubspot-6wp2fd.fahim   xiomi-p0djqe.fahim

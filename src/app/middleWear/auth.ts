@@ -9,6 +9,8 @@ import { verifyToken } from "../modules/auth/auth.utils";
 const auth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req, res, next) => {
     const token = req.headers.authorization;
+    const host = req.headers.host as string;
+    const tenantId = host.split(".")[0];
 
     //Check if token is sent
     if (!token) {
@@ -28,9 +30,10 @@ const auth = (...requiredRoles: TUserRole[]) => {
         "Unauthorized access happened"
       );
     }
+
+    const { userId, role, iat } = decoded;
     console.log(decoded);
-    const { userId, role, tenantId, iat } = decoded;
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId, tenantId });
 
     // Check if user exists
     if (!user) {
