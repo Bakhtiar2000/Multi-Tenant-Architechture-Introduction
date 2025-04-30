@@ -10,7 +10,6 @@ import { sendEmail } from "../../utils/sendEmail";
 import checkTenant from "../../utils/checkTenant";
 
 const loginUser = async (payload: TLoginUser, tenantId: string) => {
-  console.log(tenantId);
   await checkTenant(tenantId);
   const user = await User.findOne({ email: payload?.email, tenantId }).select(
     "+password"
@@ -42,6 +41,7 @@ const loginUser = async (payload: TLoginUser, tenantId: string) => {
   const jwtPayload = {
     userId: user._id.toString(),
     role: user.role,
+    tenantId,
   };
 
   //++++++++++++++++   ACCESS TOKEN   ++++++++++++++++
@@ -140,6 +140,7 @@ const refreshToken = async (token: string, tenantId: string) => {
   const jwtPayload = {
     userId: user.id,
     role: user.role,
+    tenantId,
   };
 
   const accessToken = createToken(
@@ -175,6 +176,7 @@ const forgetPassword = async (email: string, tenantId: string) => {
   const jwtPayload = {
     userId: user.id,
     role: user.role,
+    tenantId,
   };
 
   const resetToken = createToken(

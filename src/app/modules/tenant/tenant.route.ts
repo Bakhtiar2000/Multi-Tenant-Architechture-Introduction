@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { Tenant } from "./tenant.model";
+import { Tenant, TenantFeature } from "./tenant.model";
 import { catchAsync } from "../../utils/catchAsync";
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
@@ -21,6 +21,7 @@ router.get(
 // POST A TENANT
 router.post(
   "/",
+  auth(USER_ROLE.super_admin),
   catchAsync(async (req: Request, res: Response) => {
     const input = req.body;
     const slugify = (str: string) =>
@@ -60,6 +61,15 @@ router.post(
       message: "Tenant created successfully",
       data: tenant,
     });
+  })
+);
+
+router.get(
+  "/features",
+  auth(USER_ROLE.super_admin),
+  catchAsync(async (req: Request, res: Response) => {
+    const tenants = await TenantFeature.find();
+    res.json({ message: "Tenants retrieved successfully!", data: tenants });
   })
 );
 

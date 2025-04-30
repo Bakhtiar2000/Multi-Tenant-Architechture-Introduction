@@ -10,7 +10,7 @@ const auth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req, res, next) => {
     const token = req.headers.authorization;
     const host = req.headers.host as string;
-    const tenantId = host.split(".")[0];
+    const subDomainTenantId = host.split(".")[0];
 
     //Check if token is sent
     if (!token) {
@@ -31,13 +31,16 @@ const auth = (...requiredRoles: TUserRole[]) => {
       );
     }
 
-    const { userId, role, iat } = decoded;
+    const { userId, role, tenantId } = decoded;
     console.log(decoded);
     const user = await User.findOne({ _id: userId, tenantId });
 
     // Check if user exists
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+    }
+    if (decoded.tenantId !== subDomainTenantId) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Tenant mismatch");
     }
 
     // // Check if user is deleted
